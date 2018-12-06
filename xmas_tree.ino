@@ -30,10 +30,11 @@ void setup() {
 
   Serial.begin(9600);
   while (!Serial) {}; // wait for connect
+  while ( Serial.available() ) {Serial.read(); }; // flush
   Serial.print(PROMPT);
 }
 
-#define INPUT_BUFFER_MAX 256
+#define INPUT_BUFFER_MAX 64
 
 char in_char;
 char in_buff[INPUT_BUFFER_MAX];
@@ -51,27 +52,20 @@ void submit_command( char* s ) {
       break;
     case 'b':
       operand = atol(&(s[1]));
-      Serial.print( "brightness: " );
-      Serial.print( operand );
       ws2812fx.setBrightness(operand);
       break;
-#if 0
 
     case 'p':
       operand = atol(&s[1]);
-      Serial.print( "program: ");
-      Serial.print( operand );
       fx_mode = operand;
       break;
 
     case 'c':
       char *endPtr;
       operand = strtol( &s[1], &endPtr, 16 );
-      Serial.print( "color: ");
-      Serial.print( operand );
       color = operand;
       break;
-#endif
+
     default:
       Serial.print("no comprendo");
   }
@@ -85,7 +79,6 @@ void loop() {
     in_char = Serial.read();
     Serial.write( in_char );
     switch (in_char) {
-#if 0
       case '\n':
         in_buff[in_count] = '\0';
         submit_command( in_buff );
@@ -94,9 +87,8 @@ void loop() {
       case '\r':
         // discard
         break;
-#endif
       default:
-        if ( in_count < INPUT_BUFFER_MAX ) {
+        if ( in_count < INPUT_BUFFER_MAX-1 ) {
           in_buff[in_count++] = in_char;
         }
     }
