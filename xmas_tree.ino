@@ -18,13 +18,24 @@
 WS2812FX ws2812fx = WS2812FX(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 
 
+#define INPUT_BUFFER_MAX 64
+
+char in_char;
+char in_buff[INPUT_BUFFER_MAX];
+uint8_t in_count = 0;
+
+uint32_t color = 0xff7b00;
+uint8_t fx_mode = 12;
+
 void setup() {
 
   ws2812fx.init();
   ws2812fx.setBrightness(5);
   ws2812fx.setSegment( 0, 0, 28, FX_MODE_STATIC, (uint32_t)0x000000, 1000, false );
-  ws2812fx.setSegment( 1, 29, 262, 22, (uint32_t)0xFF7000, 1000, false );
+  ws2812fx.setSegment( 1, 29, 262, fx_mode, (uint32_t)0xFF7000, 1000, false );
   ws2812fx.setSegment( 2, 263, 299, 44, (uint32_t)0xFF4000, 1000, false );
+//  ws2812fx.setSegment( 2, 263, 299, 1, (uint32_t)0xFFFF80, 1000, false );
+  ws2812fx.setBrightness(10);
 
   ws2812fx.start();
 
@@ -34,14 +45,6 @@ void setup() {
   Serial.print(PROMPT);
 }
 
-#define INPUT_BUFFER_MAX 64
-
-char in_char;
-char in_buff[INPUT_BUFFER_MAX];
-uint8_t in_count = 0;
-
-uint32_t color = 0xff7b00;
-uint8_t fx_mode = 22;
 
 
 void submit_command( char* s ) {
