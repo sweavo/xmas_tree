@@ -3,6 +3,8 @@
 #define PROMPT "XMOS 0.1>"
 
 #define LED_COUNT 300
+#define FIRST_USABLE_LED 29
+#define LAST_USABLE_LED 262
 #define LED_PIN 4
 
 #define TIMER_MS 5000
@@ -31,9 +33,9 @@ void setup() {
 
   ws2812fx.init();
   ws2812fx.setBrightness(5);
-  ws2812fx.setSegment( 0, 0, 28, FX_MODE_STATIC, (uint32_t)0x000000, 1000, false );
-  ws2812fx.setSegment( 1, 29, 262, fx_mode, (uint32_t)0xFF7000, 1000, false );
-  ws2812fx.setSegment( 2, 263, 299, 44, (uint32_t)0xFF4000, 1000, false );
+  ws2812fx.setSegment( 0, 0,                    FIRST_USABLE_LED - 1, FX_MODE_STATIC, (uint32_t)0x000000, 1000, false );
+  ws2812fx.setSegment( 1, FIRST_USABLE_LED,     LAST_USABLE_LED,      fx_mode,        (uint32_t)0xFF7000, 1000, false );
+  ws2812fx.setSegment( 2, LAST_USABLE_LED + 1,  299,                  44,             (uint32_t)0xFF4000, 1000, false );
 //  ws2812fx.setSegment( 2, 263, 299, 1, (uint32_t)0xFFFF80, 1000, false );
   ws2812fx.setBrightness(10);
 
@@ -72,7 +74,8 @@ void submit_command( char* s ) {
     default:
       Serial.print("no comprendo");
   }
-  ws2812fx.setSegment( 1, 29, 262, fx_mode, (uint32_t)color, 1000, false );
+  ws2812fx.setSegment( 1, FIRST_USABLE_LED, LAST_USABLE_LED, fx_mode, (uint32_t)color, 1000, false );
+  
   Serial.print("\n" PROMPT);
 }
 
