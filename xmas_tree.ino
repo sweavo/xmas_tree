@@ -1,8 +1,7 @@
 #include <WS2812FX.h>
-
+#define AT_HOME 0
 #define PROMPT "XMOS 0.1>"
 
-#define LED_COUNT 300
 #define LED_PIN 4
 
 #define TIMER_MS 5000
@@ -15,8 +14,13 @@
 //   NEO_GRB     Pixels are wired for GRB bitstream (most NeoPixel products)
 //   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
 //   NEO_RGBW    Pixels are wired for RGBW bitstream (NeoPixel RGBW products)
+#ifdef AT_HOME
+#define LED_COUNT 16
+WS2812FX ws2812fx = WS2812FX(LED_COUNT, LED_PIN, NEO_GRBW + NEO_KHZ800);
+#else
+#define LED_COUNT 300
 WS2812FX ws2812fx = WS2812FX(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
-
+#endif
 
 #define INPUT_BUFFER_MAX 64
 
@@ -24,55 +28,74 @@ char in_char;
 char in_buff[INPUT_BUFFER_MAX];
 uint8_t in_count = 0;
 
-uint32_t color = 0xff7b00;
+uint32_t fx_color = 0xff7b00;
 uint8_t fx_mode = 12;
-
+uint8_t fx_brightness = 10;
+void update_tree()
+{
+#ifdef AT_HOME
+  ws2812fx.setSegment( 1, 0, 15, fx_mode, (uint32_t)fx_color, 1000, false );
+#else
+  ws2812fx.setSegment( 1, 29, 262, fx_mode, (uint32_t)fx_color, 1000, false );
+#endif
+  ws2812fx.setBrightness( fx_brightness);
+}
 void setup() {
 
   ws2812fx.init();
-  ws2812fx.setBrightness(5);
   ws2812fx.setSegment( 0, 0, 28, FX_MODE_STATIC, (uint32_t)0x000000, 1000, false );
-  ws2812fx.setSegment( 1, 29, 262, fx_mode, (uint32_t)0xFF7000, 1000, false );
+  update_tree();
   ws2812fx.setSegment( 2, 263, 299, 44, (uint32_t)0xFF4000, 1000, false );
-//  ws2812fx.setSegment( 2, 263, 299, 1, (uint32_t)0xFFFF80, 1000, false );
-  ws2812fx.setBrightness(10);
 
   ws2812fx.start();
 
   Serial.begin(9600);
   while (!Serial) {}; // wait for connect
-  while ( Serial.available() ) {Serial.read(); }; // flush
+  while ( Serial.available() ) {
+    Serial.read(); // flush
+  };
   Serial.print(PROMPT);
 }
 
 
 
 void submit_command( char* s ) {
-  uint32_t operand = 0;
   switch ( s[0] )
   {
     case '\0':
+      Serial.write('X');
       break;
+
     case 'b':
-      operand = atol(&(s[1]));
-      ws2812fx.setBrightness(operand);
+      fx_brightness = atol(&(s[1]));
+      Serial.write('B');
       break;
 
     case 'p':
-      operand = atol(&s[1]);
-      fx_mode = operand;
+      fx_mode = atol(&s[1]);
+      Serial.write('P');
       break;
 
     case 'c':
       char *endPtr;
-      operand = strtol( &s[1], &endPtr, 16 );
-      color = operand;
+      fx_color = strtol( &s[1], &endPtr, 16 );
+      Serial.write('C');
+      break;
+
+    case 's':
+      Serial.write( "Sp");
+      Serial.print( fx_mode );
+      Serial.write( ";c" );
+      Serial.print( fx_color, HEX );
+      Serial.write( ";b" );
+      Serial.print( fx_brightness );
+      Serial.write( '\n' );
       break;
 
     default:
-      Serial.print("no comprendo");
+      Serial.print("X");
   }
-  ws2812fx.setSegment( 1, 29, 262, fx_mode, (uint32_t)color, 1000, false );
+  update_tree();
   Serial.print("\n" PROMPT);
 }
 
@@ -83,6 +106,7 @@ void loop() {
     Serial.write( in_char );
     switch (in_char) {
       case '\n':
+      case ';':
         in_buff[in_count] = '\0';
         submit_command( in_buff );
         in_count = 0;
@@ -91,9 +115,10 @@ void loop() {
         // discard
         break;
       default:
-        if ( in_count < INPUT_BUFFER_MAX-1 ) {
+        if ( in_count < INPUT_BUFFER_MAX - 1 ) {
           in_buff[in_count++] = in_char;
         }
     }
   }
 }
+
