@@ -32,12 +32,12 @@ char in_char;
 char in_buff[INPUT_BUFFER_MAX];
 uint8_t in_count = 0;
 
-uint32_t fx_color = 0xff0000;
 uint8_t fx_mode = 12;
+uint32_t fx_color = 0xff0000;
 uint8_t fx_brightness = 10;
 
-bool color_dirty = true;
 bool mode_dirty = true;
+bool color_dirty = true;
 bool brightness_dirty = true;
 
 void update_tree() {
@@ -67,12 +67,7 @@ void submit_command( char* s ) {
       Serial.write('X');
       break;
 
-    case 'b':
-      fx_brightness = atol(&(s[1]));
-      brightness_dirty=true;
-      break;
-
-    case 'p':
+    case 'm':
       fx_mode = atol(&s[1]);
       mode_dirty=true;
       break;
@@ -81,6 +76,11 @@ void submit_command( char* s ) {
       char *endPtr;
       fx_color = strtol( &s[1], &endPtr, 16 );
       color_dirty=true;
+      break;
+
+    case 'b':
+      fx_brightness = atol(&(s[1]));
+      brightness_dirty=true;
       break;
 
     case 's':
@@ -120,19 +120,19 @@ void loop() {
       update_tree();
       if (mode_dirty){
         mode_dirty=false;
-        Serial.write('P');
+        Serial.write('m');
         Serial.print( fx_mode );
         Serial.write(';');
       }
       if (color_dirty){
         color_dirty=false;      
-        Serial.write('C');
+        Serial.write('c');
         Serial.print( fx_color, HEX );
         Serial.write(';');
       }
       if (brightness_dirty){
         brightness_dirty=false;
-        Serial.write('B');
+        Serial.write('b');
         Serial.print( fx_brightness );
         Serial.write(';');
       }
