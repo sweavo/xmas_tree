@@ -1,5 +1,5 @@
 #include <WS2812FX.h>
-#define AT_HOME 0
+//#define AT_HOME
 #define PROMPT "XMOS 0.1>"
 
 #define LED_PIN 4
