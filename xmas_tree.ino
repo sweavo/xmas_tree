@@ -36,6 +36,10 @@ uint32_t fx_color = 0xff0000;
 uint8_t fx_mode = 12;
 uint8_t fx_brightness = 10;
 
+bool color_dirty = true;
+bool mode_dirty = true;
+bool brightness_dirty = true;
+
 void update_tree() {
   ws2812fx.setSegment( 0, 0,                    FIRST_USABLE_LED - 1, FX_MODE_STATIC, (uint32_t)0x000000, 1000, false );
   ws2812fx.setSegment( 1, FIRST_USABLE_LED,     LAST_USABLE_LED,      fx_mode,        (uint32_t)fx_color, 1000, false );
@@ -56,8 +60,6 @@ void setup() {
   Serial.print(PROMPT);
 }
 
-
-
 void submit_command( char* s ) {
   switch ( s[0] )
   {
@@ -67,38 +69,30 @@ void submit_command( char* s ) {
 
     case 'b':
       fx_brightness = atol(&(s[1]));
-      Serial.write('B');
-      Serial.print( fx_brightness );
+      brightness_dirty=true;
       break;
 
     case 'p':
       fx_mode = atol(&s[1]);
-      Serial.write('P');
-      Serial.print( fx_mode );
+      mode_dirty=true;
       break;
 
     case 'c':
       char *endPtr;
       fx_color = strtol( &s[1], &endPtr, 16 );
-      Serial.write('C');
-      Serial.print( fx_color, HEX );
+      color_dirty=true;
       break;
 
     case 's':
-      Serial.write( "Sp");
-      Serial.print( fx_mode );
-      Serial.write( ";c" );
-      Serial.print( fx_color, HEX );
-      Serial.write( ";b" );
-      Serial.print( fx_brightness );
-      Serial.write( '\n' );
+      color_dirty=true;
+      brightness_dirty=true;
+      mode_dirty=true;
       break;
 
     default:
       Serial.print("X");
   }
   
-  update_tree();
   Serial.print("\n" PROMPT);
 }
 
@@ -106,7 +100,6 @@ void loop() {
   ws2812fx.service();
   if ( Serial.available() ) {
     in_char = Serial.read();
-    Serial.write( in_char );
     switch (in_char) {
       case '\n':
       case ';':
@@ -121,6 +114,28 @@ void loop() {
         if ( in_count < INPUT_BUFFER_MAX - 1 ) {
           in_buff[in_count++] = in_char;
         }
+    }
+  } else {
+    if (mode_dirty || color_dirty || brightness_dirty ){
+      update_tree();
+      if (mode_dirty){
+        mode_dirty=false;
+        Serial.write('P');
+        Serial.print( fx_mode );
+        Serial.write(';');
+      }
+      if (color_dirty){
+        color_dirty=false;      
+        Serial.write('C');
+        Serial.print( fx_color, HEX );
+        Serial.write(';');
+      }
+      if (brightness_dirty){
+        brightness_dirty=false;
+        Serial.write('B');
+        Serial.print( fx_brightness );
+        Serial.write(';');
+      }
     }
   }
 }
