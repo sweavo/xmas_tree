@@ -32,19 +32,18 @@ char in_char;
 char in_buff[INPUT_BUFFER_MAX];
 uint8_t in_count = 0;
 
-uint32_t fx_color = 0xff7b00;
+uint32_t fx_color = 0xff0000;
 uint8_t fx_mode = 12;
 uint8_t fx_brightness = 10;
-void update_tree()
-{
+
+void update_tree() {
   ws2812fx.setSegment( 0, 0,                    FIRST_USABLE_LED - 1, FX_MODE_STATIC, (uint32_t)0x000000, 1000, false );
   ws2812fx.setSegment( 1, FIRST_USABLE_LED,     LAST_USABLE_LED,      fx_mode,        (uint32_t)fx_color, 1000, false );
   ws2812fx.setSegment( 2, LAST_USABLE_LED + 1,  LED_COUNT-1,          44,             (uint32_t)0xFF4000, 1000, false );
-  ws2812fx.setBrightness( fx_brightness);
+  ws2812fx.setBrightness( fx_brightness );
 }
 
 void setup() {
-
   ws2812fx.init();
   update_tree();
   ws2812fx.start();
@@ -122,4 +121,3 @@ void loop() {
     }
   }
 }
-
