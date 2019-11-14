@@ -68,17 +68,20 @@ void submit_command( char* s ) {
     case 'b':
       fx_brightness = atol(&(s[1]));
       Serial.write('B');
+      Serial.print( fx_brightness );
       break;
 
     case 'p':
       fx_mode = atol(&s[1]);
       Serial.write('P');
+      Serial.print( fx_mode );
       break;
 
     case 'c':
       char *endPtr;
       fx_color = strtol( &s[1], &endPtr, 16 );
       Serial.write('C');
+      Serial.print( fx_color, HEX );
       break;
 
     case 's':
