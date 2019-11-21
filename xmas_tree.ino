@@ -57,6 +57,7 @@ void setup() {
   while ( Serial.available() ) {
     Serial.read(); // flush
   };
+  Serial.print("Setup complete\n");
   Serial.print(PROMPT);
 }
 
