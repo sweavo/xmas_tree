@@ -32,7 +32,10 @@ char in_char;
 char in_buff[INPUT_BUFFER_MAX];
 uint8_t in_count = 0;
 
-uint8_t fx_mode = 12;
+uint16_t revert_in=0; // for alert function
+uint8_t old_mode= 0; // for alert function
+uint8_t fx_mode = 12; // unicorn thing
+//uint8_t fx_mode = 47; // xmas
 uint32_t fx_color = 0xff0000;
 uint8_t fx_brightness = 10;
 
@@ -45,6 +48,7 @@ void update_tree() {
   ws2812fx.setSegment( 1, FIRST_USABLE_LED,     LAST_USABLE_LED,      fx_mode,        (uint32_t)fx_color, 1000, false );
   ws2812fx.setSegment( 2, LAST_USABLE_LED + 1,  LED_COUNT-1,          44,             (uint32_t)0xFF4000, 1000, false );
   ws2812fx.setBrightness( fx_brightness );
+  ws2812fx.setSpeed(20);
 }
 
 void setup() {
@@ -90,6 +94,13 @@ void submit_command( char* s ) {
       mode_dirty=true;
       break;
 
+    case 'a': //alert! --- go to a bright state for a couple of seconds
+      old_mode=fx_mode;
+      fx_mode=1;
+      mode_dirty=true;
+      revert_in=200; // 2 seconds, maybe?
+      break;
+        
     default:
       Serial.print("X");
   }
@@ -99,6 +110,7 @@ void submit_command( char* s ) {
 
 void loop() {
   ws2812fx.service();
+  delay(10);
   if ( Serial.available() ) {
     in_char = Serial.read();
     switch (in_char) {
@@ -117,6 +129,13 @@ void loop() {
         }
     }
   } else {
+    if ( revert_in ) {
+      --revert_in;
+      if ( ! revert_in ) {
+        fx_mode=old_mode;
+        mode_dirty=1;
+      }
+    }
     if (mode_dirty || color_dirty || brightness_dirty ){
       update_tree();
       if (mode_dirty){
