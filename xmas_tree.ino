@@ -1,5 +1,4 @@
 #include <WS2812FX.h>
-//#define AT_HOME
 #define PROMPT "XMOS 0.1>"
 
 #define LED_PIN 4
@@ -14,17 +13,11 @@
 //   NEO_GRB     Pixels are wired for GRB bitstream (most NeoPixel products)
 //   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
 //   NEO_RGBW    Pixels are wired for RGBW bitstream (NeoPixel RGBW products)
-#ifdef AT_HOME
-#define LED_COUNT 16
+#define LED_COUNT 69
+#define STAR_LEDS 20
 #define FIRST_USABLE_LED 2
-#define LAST_USABLE_LED 13
-WS2812FX ws2812fx = WS2812FX(LED_COUNT, LED_PIN, NEO_GRBW + NEO_KHZ800);
-#else
-#define LED_COUNT 300
-#define FIRST_USABLE_LED 36
-#define LAST_USABLE_LED 262
+#define LAST_USABLE_LED ((LED_COUNT) - (STAR_LEDS))
 WS2812FX ws2812fx = WS2812FX(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
-#endif
 
 #define INPUT_BUFFER_MAX 64
 
